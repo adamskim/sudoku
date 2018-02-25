@@ -34,6 +34,7 @@ public class SudokuElement implements Serializable {
 
     public void setValue(int value) {
         this.value = value;
+        possibleValues.clear();
     }
 
     public List<Integer> getPossibleValues() {

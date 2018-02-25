@@ -4,11 +4,13 @@ import java.util.Stack;
 
 public class SudokuGame {
 
+    private BoardCreator boardCreator;
     private Board board;
     private Stack<Board> backBoards;
 
     public SudokuGame() {
-        board = new Board();
+        boardCreator = new InputCommandReader();
+        board = boardCreator.createBoard();
         backBoards = new Stack<>();
     }
 

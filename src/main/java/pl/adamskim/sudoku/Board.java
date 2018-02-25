@@ -140,4 +140,8 @@ public class Board implements Serializable {
         }
         return board;
     }
+
+    public void setElement(int col, int row, int value) {
+        rows.get(row).getElements().get(col).setValue(value);
+    }
 }
