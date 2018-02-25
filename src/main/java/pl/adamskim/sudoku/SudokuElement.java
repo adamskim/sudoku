@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static pl.adamskim.sudoku.Board.BOARD_SIZE;
+
 public class SudokuElement implements Serializable {
     private int value;
     private List<Integer> possibleValues;
 
     public SudokuElement() {
-        possibleValues = IntStream.range(1, 10).boxed().collect(Collectors.toList());
+        possibleValues = IntStream.range(1, BOARD_SIZE + 1).boxed().collect(Collectors.toList());
     }
 
     public SudokuElement(int value) {

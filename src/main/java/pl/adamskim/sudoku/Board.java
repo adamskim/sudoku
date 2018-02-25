@@ -8,14 +8,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static pl.adamskim.sudoku.SudokuRow.SIZE;
-
 public class Board implements Serializable {
+
+    public static final int BOARD_SIZE = 9;
+    public static final int BLOCK_SIZE = 3;
 
     private List<SudokuRow> rows;
 
     public Board() {
-        rows = Stream.generate(SudokuRow::new).limit(SIZE).collect(Collectors.toList());
+        rows = Stream.generate(SudokuRow::new).limit(BOARD_SIZE).collect(Collectors.toList());
     }
 
     public boolean resolveBoard() throws BoardNotResolvableException {
@@ -28,26 +29,34 @@ public class Board implements Serializable {
 
     private boolean iterateOverBoard() throws BoardNotResolvableException {
         boolean actionPerformed = false;
-        List<SudokuElement> notFilledElements = getSudokuElementStream()
-                .filter(e -> !e.filled()).collect(Collectors.toList());
+        List<SudokuElement> notFilledElements = getNotFilledElements();
         for (SudokuElement sudokuElement : notFilledElements) {
             List<Integer> possibleValues = sudokuElement.getPossibleValues();
-            Iterator<Integer> possibleValuesIterator = possibleValues.iterator();
-            while (possibleValuesIterator.hasNext()) {
-                Integer possibleValue = possibleValuesIterator.next();
-                if (toEliminate(possibleValue, findRowAndColumn(sudokuElement))) {
-                    possibleValuesIterator.remove();
-                    actionPerformed = true;
-                }
-            }
-            if (possibleValues.isEmpty()) {
-                throw new BoardNotResolvableException();
-            }
-            if (possibleValues.size() == 1) {
-                sudokuElement.setValue(possibleValues.get(0));
-            }
+            List<Integer> possibleValuesToEliminate = getPossibleValuesToEliminate(sudokuElement);
+            possibleValues.removeAll(possibleValuesToEliminate);
+            tryFillElement(sudokuElement);
+            actionPerformed = actionPerformed || !possibleValuesToEliminate.isEmpty();
         }
         return actionPerformed;
+    }
+
+    private List<SudokuElement> getNotFilledElements() {
+        return getSudokuElementStream().filter(e -> !e.filled()).collect(Collectors.toList());
+    }
+
+    private void tryFillElement(SudokuElement sudokuElement) throws BoardNotResolvableException {
+        List<Integer> possibleValues = sudokuElement.getPossibleValues();
+        if (possibleValues.isEmpty()) {
+            throw new BoardNotResolvableException();
+        }
+        if (possibleValues.size() == 1) {
+            sudokuElement.setValue(possibleValues.get(0));
+        }
+    }
+
+    private List<Integer> getPossibleValuesToEliminate(SudokuElement sudokuElement) {
+        return sudokuElement.getPossibleValues().stream().filter(pv -> toEliminate(pv, findRowAndColumn(sudokuElement)))
+                .collect(Collectors.toList());
     }
 
     private Stream<SudokuElement> getSudokuElementStream() {
@@ -76,9 +85,9 @@ public class Board implements Serializable {
     }
 
 
-    public boolean toEliminate(int value, Pair<Integer, Integer> coordinates) {
-        int row = coordinates.getKey();
-        int column = coordinates.getValue();
+    public boolean toEliminate(int value, Pair<Integer, Integer> elementLocation) {
+        int row = elementLocation.getKey();
+        int column = elementLocation.getValue();
         return findInRow(value, row) || findInColumn(value, column) || findInBlock(value, column, row);
     }
 
@@ -91,10 +100,10 @@ public class Board implements Serializable {
     }
 
     private boolean findInBlock(int value, int column, int row) {
-        int blockX = column / 3;
-        int blockY = row / 3;
-        for (int y = blockY * 3;  y <(blockY + 1) * 3; y++) {
-            for (int x = blockX * 3;  x <(blockX + 1) * 3; x++) {
+        int blockX = column / BLOCK_SIZE;
+        int blockY = row / BLOCK_SIZE;
+        for (int y = blockY * BLOCK_SIZE;  y <(blockY + 1) * BLOCK_SIZE; y++) {
+            for (int x = blockX * BLOCK_SIZE;  x <(blockX + 1) * BLOCK_SIZE; x++) {
                 if (rows.get(y).getElements().get(x).getValue() == value) {
                     return true;
                 }

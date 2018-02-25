@@ -5,13 +5,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class SudokuRow implements Serializable {
-    public static final int SIZE = 9;
+import static pl.adamskim.sudoku.Board.BOARD_SIZE;
 
+public class SudokuRow implements Serializable {
     private List<SudokuElement> elements;
 
     public SudokuRow() {
-        elements = Stream.generate(SudokuElement::new).limit(SIZE).collect(Collectors.toList());
+        elements = Stream.generate(SudokuElement::new).limit(BOARD_SIZE).collect(Collectors.toList());
     }
 
     public List<SudokuElement> getElements() {
